@@ -133,6 +133,7 @@ public class MainLoop : MonoBehaviour {
         GameManager.instance.score++;
        
         num_txt.DOColor(colorCorrect, 0);
+        target_txt.DOColor(colorCorrect, 0);
         score_txt.text = "" + GameManager.instance.score + " : SCORE";
         GameManager.instance.game_start = false;
         speed += increaseSpeed;
@@ -151,14 +152,16 @@ public class MainLoop : MonoBehaviour {
         game_manager.game_start = true;
         game_manager.game_over = false;
         num_txt.DOColor(Color.white, 0);
+        target_txt.DOColor(Color.white, 0);
         target = (int)Random.Range(0, 10);
         tap_start_txt.enabled = false;
-        target_txt.text = "TARGET : " + target;
+        target_txt.text = "                 " + target;
         bonus_time = secound;
     }
     void GameOver()
     {
         num_txt.DOColor(colorWrong, 0);
+        target_txt.DOColor(colorWrong, 0);
         GameManager.instance.game_start = false;
 
         speed = tempSpeed;
