@@ -5,7 +5,6 @@ using UnityEditor.Callbacks;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 using VoxelBusters.Utility;
 using VoxelBusters.ThirdParty.XUPorter;
 using PlayerSettings = UnityEditor.PlayerSettings;
@@ -43,16 +42,14 @@ namespace VoxelBusters.NativePlugins
 
 		// PlayerPrefs keys
 		private	const string	kTwitterConfigKey						= "twitter-config";
-	
+
 		// Fabric data
 		private const string 	kFabricKitJsonStringFormat				= "{{\"Fabric\":{{\"APIKey\":\"{0}\",\"Kits\":[{{\"KitInfo\":{{\"consumerKey\":\"\",\"consumerSecret\":\"\"}},\"KitName\":\"Twitter\"}}]}}}}";
-		
+
 		// Pch file modification
 		private const string 	kPrecompiledFileRelativeDirectoryPath	= "Classes/";
 		private const string 	kPrecompiledHeaderExtensionPattern		= "*.pch";
-		private const string	kPrecompiledHeaderRegexPattern			= @"#ifdef __OBJC__(\n?\t?[#|//](.)*)*";
-		private const string	kPrecompiledHeaderEndIfTag				= "#endif";
-		private const string	kPrecompiledHeaderInsertText			= "#import \"Defines.h\"";
+		private const string	kPCHInsertHeaders			= "#ifdef __OBJC__\n\t#import \"Defines.h\"\n#endif\n";
 
 		#endregion
 
@@ -68,19 +65,19 @@ namespace VoxelBusters.NativePlugins
 		public static void OnPostProcessBuildActionStart (BuildTarget _target, string _buildPath) 
 		{			
 			string 	_targetStr	= _target.ToString();
-			
+
 			if (_targetStr.Equals("iOS") || _targetStr.Equals("iPhone"))
 			{
 				iOSPostProcessBuild(_target, _buildPath);
 				return;
 			}
 		}
-		
+
 		[PostProcessBuild(1000)]
 		public static void OnPostProcessBuildActionFinish (BuildTarget _target, string _buildPath) 
 		{
 			string 	_targetStr	= _target.ToString();
-			
+
 			if (_targetStr.Equals("iOS") || _targetStr.Equals("iPhone"))
 			{
 				CleanupProject();
@@ -111,7 +108,7 @@ namespace VoxelBusters.NativePlugins
 				// Delete file
 				File.SetAttributes(_filePath, FileAttributes.Normal);
 				File.Delete(_filePath);
-				
+
 				// Delete meta file
 				string	_metaFilePath	= _filePath + ".meta";
 				if (File.Exists(_metaFilePath))
@@ -144,19 +141,19 @@ namespace VoxelBusters.NativePlugins
 			if (_supportedFeatures.UsesTwitter)
 				DecompressTwitterSDKFiles();
 		}
-		
+
 		private static void AddBuildInfoToReceiptVerificationManger ()
 		{
 			string		_rvFilePath			= Path.Combine(kRelativePathIOSNativeCodeFolder, "Billing/Source/ReceiptVerification/Manager/ReceiptVerificationManager.m");
 			string[]	_contents			= File.ReadAllLines(_rvFilePath);
 			int			_lineCount			= _contents.Length;
-			
+
 			for (int _iter = 0; _iter < _lineCount; _iter++)
 			{
 				string	_curLine			= _contents[_iter];
 				if (!_curLine.StartsWith("const"))
 					continue;
-				
+
 				if (_curLine.Contains("bundleIdentifier"))
 				{
 					const string _kBundleVersionKey		= "CFBundleVersion";
@@ -166,11 +163,11 @@ namespace VoxelBusters.NativePlugins
 					break;
 				}
 			}
-			
+
 			// Now rewrite updated contents
 			File.WriteAllLines(_rvFilePath, _contents);
 		}
-		
+
 		private static void DecompressTwitterSDKFiles ()
 		{
 			string	_projectPath					= AssetsUtility.GetProjectPath();
@@ -207,16 +204,16 @@ namespace VoxelBusters.NativePlugins
 
 			if (_supportedFeatures.UsesGameServices)
 				ExtractAndSerializeXcodeModInfo(_xcodeModDataCollectionDict,	kModKeyGameServices, 	kRelativePathIOSNativeCodeFolder);
-			
+
 			if (_supportedFeatures.UsesMediaLibrary)
 				ExtractAndSerializeXcodeModInfo(_xcodeModDataCollectionDict,	kModKeyMediaLibrary, 	kRelativePathIOSNativeCodeFolder);
-			
+
 			if (_supportedFeatures.UsesNetworkConnectivity)
 				ExtractAndSerializeXcodeModInfo(_xcodeModDataCollectionDict,	kModKeyNetworkConnectivity, kRelativePathIOSNativeCodeFolder);
 
 			if (_supportedFeatures.UsesNotificationService)
 				ExtractAndSerializeXcodeModInfo(_xcodeModDataCollectionDict,	kModKeyNotification, 	kRelativePathIOSNativeCodeFolder);
-			
+
 			if (_supportedFeatures.UsesSharing)
 				ExtractAndSerializeXcodeModInfo(_xcodeModDataCollectionDict,	kModKeySharing, 		kRelativePathIOSNativeCodeFolder);
 
@@ -242,20 +239,20 @@ namespace VoxelBusters.NativePlugins
 			File.WriteAllText(Path.Combine(_folderRelativePath, _newModFileName), _modInfoDict.ToJSON());
 		}
 
-//		{
-//			"Fabric": {
-//				"APIKey": "{0}",
-//				"Kits": [
-//				    {
-//					"KitInfo": {
-//						"consumerKey": "",
-//						"consumerSecret": ""
-//					},
-//					"KitName": "Twitter"
-//				    }
-//				    ]
-//			}
-//		}
+		//		{
+		//			"Fabric": {
+		//				"APIKey": "{0}",
+		//				"Kits": [
+		//				    {
+		//					"KitInfo": {
+		//						"consumerKey": "",
+		//						"consumerSecret": ""
+		//					},
+		//					"KitName": "Twitter"
+		//				    }
+		//				    ]
+		//			}
+		//		}
 
 		private static void ModifyInfoPlist (string _buildPath)
 		{	
@@ -292,7 +289,7 @@ namespace VoxelBusters.NativePlugins
 
 					if (!_backgroundModesList.Contains(_kRemoteNotificationProcess))
 						_backgroundModesList.Add(_kRemoteNotificationProcess);
-					
+
 					_newPermissionsDict[_kUIBackgroundModesKey]	= _backgroundModesList;
 				}
 #endif
@@ -355,7 +352,7 @@ namespace VoxelBusters.NativePlugins
 			{
 				if (_supportedFeatures.MediaLibrary.usesCamera)
 					_newPermissionsDict[_kPermissionCamera]			= _applicationSettings.IOS.CameraUsagePermissionDescription;
-				
+
 				if (_supportedFeatures.MediaLibrary.usesPhotoAlbum)
 					_newPermissionsDict[_kPermissionPhotoLibrary]	= _applicationSettings.IOS.PhotoAlbumUsagePermissionDescription;
 			}
@@ -388,21 +385,11 @@ namespace VoxelBusters.NativePlugins
 			if (File.Exists(_pchFilePath))
 			{
 				string 	_fileContents 		= File.ReadAllText(_pchFilePath);
-				if (_fileContents.Contains(kPrecompiledHeaderInsertText))
-					return;
-
-				// We should append text within end tag
-				Regex 	_regex				= new Regex(kPrecompiledHeaderRegexPattern);
-				Match 	_match 				= _regex.Match(_fileContents);
-				int		_endOfPatternIndex	= _match.Groups[0].Index + _match.Groups[0].Length;
-
-				if (_match.Value.Contains(kPrecompiledHeaderEndIfTag))
-					_endOfPatternIndex	-= kPrecompiledHeaderEndIfTag.Length;
-
-				string 	_updatedContents	= _fileContents.Insert(_endOfPatternIndex, "\t" + kPrecompiledHeaderInsertText + "\n");
-
-				// Write updated text
-				File.WriteAllText(_pchFilePath, _updatedContents);
+				if (!_fileContents.Contains("Defines.h"))
+				{
+					string 	_updatedContents	= _fileContents + "\n\n" + kPCHInsertHeaders;
+					File.WriteAllText(_pchFilePath, _updatedContents);
+				}
 			}
 		}
 
@@ -415,7 +402,7 @@ namespace VoxelBusters.NativePlugins
 		{
 			return Path.Combine(_buildPath, kRelativePathInfoPlistBackupFile);
 		}
-		
+
 		#endregion
 	}
 }

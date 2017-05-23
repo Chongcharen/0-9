@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using DG.Tweening;
 public class MainLoop : MonoBehaviour {
-    public TextMeshProUGUI num_txt,target_txt,tap_start_txt,score_txt,time_sec_txt,bonus_txt;
+    public TextMeshProUGUI num_txt,target_txt,tap_start_txt,score_txt,time_sec_txt,bonus_txt,debug_txt;
     public float speed = 1;
     public float increaseSpeed = 0;
     public int level = 1;
@@ -94,20 +94,18 @@ public class MainLoop : MonoBehaviour {
                                     {
                                         if (touch.phase == TouchPhase.Began)
                                         {
-                                             if (!game_manager.game_start&&!game_manager.game_over)
-                                                {
-                        
-                                                     GameStart();
-                                                }
-                                                else if(!game_manager.game_start && game_manager.game_over)
-                                                {
-                                                     ResetGame();
-                                                }
-                                                else
-                                                {
-                                                   speed = 0;
-                                                  CheckAnswer();
-                                                }
+											if (!game_manager.game_start&&!game_manager.game_over)
+											{
+												GameStart();
+											}
+											else if(!game_manager.game_start && game_manager.game_over)
+											{
+												ResetGame();
+											}
+											else
+											{
+												CheckAnswer();
+											}
                                         }
                                     }
 
@@ -169,6 +167,10 @@ public class MainLoop : MonoBehaviour {
         GameManager.instance.score = 0;
         score_txt.text = "" + GameManager.instance.score + " : SCORE";
         game_manager.game_over = true;
+
+		AchievementProgress.instance.AddAchievementNoob ();
+		AchievementProgress.instance.IncreasePlayGame ();
+		debug_txt.text = ""+AchievementManager.instance.achievements.Length;
     }
     void ResetGame()
     {
