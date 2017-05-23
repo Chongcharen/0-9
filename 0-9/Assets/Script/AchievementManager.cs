@@ -51,8 +51,8 @@ public class AchievementManager : MonoBehaviour {
 			}
 
 			achievements = _achievements;
-
-			for (int _iter = 0; _iter < achievements.Length; _iter++)
+            Debug.Log("achievements " + achievements.Length);
+            for (int _iter = 0; _iter < achievements.Length; _iter++)
 			{
 				Debug.Log(string.Format("[Index {0}]: {1}", _iter, _achievements[_iter]));
 			}
@@ -69,7 +69,7 @@ public class AchievementManager : MonoBehaviour {
 			}
 
 			descriptions = _descriptions;
-			Debug.Log("descriptions "+descriptions.Length);
+			Debug.Log("descriptions "+descriptions);
 			for (int _iter = 0; _iter < descriptions.Length; _iter++)
 			{
 				Debug.Log(string.Format("[Index {0}]: {1}", _iter, _descriptions[_iter]));

@@ -170,7 +170,9 @@ public class MainLoop : MonoBehaviour {
 
 		AchievementProgress.instance.AddAchievementNoob ();
 		AchievementProgress.instance.IncreasePlayGame ();
-		debug_txt.text = ""+AchievementManager.instance.achievements.Length;
+        AchievementProgress.instance.InCreaseFailGame();
+
+        debug_txt.text = ""+AchievementManager.instance.achievements.Length;
     }
     void ResetGame()
     {
