@@ -6,11 +6,14 @@ public class AppStart : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        PlayerPrefs.DeleteAll();
 		Invoke ("TestA", 2);
 
 	}
 	void TestA(){
-		AchievementManager.instance.SignIn ();
-	}
+        #if !UNITY_EDITOR
+                AchievementManager.instance.SignIn ();
+        #endif
+    }
 
 }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using DG.Tweening;
+using UnityEngine.UI;
 public class MainLoop : MonoBehaviour {
+    public Button b_start;
     public TextMeshProUGUI num_txt,target_txt,tap_start_txt,score_txt,time_sec_txt,bonus_txt,debug_txt;
     public float speed = 1;
     public float increaseSpeed = 0;
@@ -33,6 +35,10 @@ public class MainLoop : MonoBehaviour {
         game_manager = GameManager.instance;
         current_time = secound;
         bonus_time = secound;
+        b_start.onClick.AddListener(()=> {
+            UIButton.instance.Hide();
+            GameStart();
+        });
 
     }
 	
@@ -77,11 +83,11 @@ public class MainLoop : MonoBehaviour {
                     if (!game_manager.game_start&&!game_manager.game_over)
                     {
                         
-                         GameStart();
+                        
                     }
                     else if(!game_manager.game_start && game_manager.game_over)
                     {
-                         ResetGame();
+          
                     }
                     else
                     {
@@ -96,11 +102,11 @@ public class MainLoop : MonoBehaviour {
                                         {
 											if (!game_manager.game_start&&!game_manager.game_over)
 											{
-												GameStart();
+												//GameStart();
 											}
 											else if(!game_manager.game_start && game_manager.game_over)
 											{
-												ResetGame();
+												//ResetGame();
 											}
 											else
 											{
@@ -133,7 +139,7 @@ public class MainLoop : MonoBehaviour {
         num_txt.DOColor(colorCorrect, 0);
         target_txt.DOColor(colorCorrect, 0);
         score_txt.text = "" + GameManager.instance.score + " : SCORE";
-        GameManager.instance.game_start = false;
+        game_manager.game_start = false;
         speed += increaseSpeed;
         level++;
         current_time += secound;
@@ -143,10 +149,21 @@ public class MainLoop : MonoBehaviour {
             bonus_animator.SetTrigger("play");
         }
         StartCoroutine("DelayStart");
+        AchievementManager.instance.ReportAchievementProgressWithIdentifier("CgkIlvbX3p4CEAIQBA");
+
        
     }
     void GameStart()
     {
+        if (game_manager.game_over)
+        {
+            GameManager.instance.score = 0;
+            score_txt.text = "" + GameManager.instance.score + " : SCORE";
+            current_time = secound;
+            Events.instance.OnResetEffect_Dispatch();
+            UIButton.instance.Hide();
+        }
+        b_start.gameObject.SetActive(false);
         game_manager.game_start = true;
         game_manager.game_over = false;
         num_txt.DOColor(Color.white, 0);
@@ -158,27 +175,24 @@ public class MainLoop : MonoBehaviour {
     }
     void GameOver()
     {
+        UIButton.instance.Show();
         num_txt.DOColor(colorWrong, 0);
         target_txt.DOColor(colorWrong, 0);
+        Events.instance.OnPauseEffect_Dispatch();
         GameManager.instance.game_start = false;
-
+        AchievementManager.instance.ReportLeaderBoardScore(GameManager.instance.score);
+        b_start.gameObject.SetActive(true);
+        AchievementProgress.instance.IncreasePlayGame();
+        AchievementProgress.instance.CheckFirstPlay();
         speed = tempSpeed;
         tap_start_txt.enabled = true;
-        GameManager.instance.score = 0;
+        
         score_txt.text = "" + GameManager.instance.score + " : SCORE";
         game_manager.game_over = true;
-
-		AchievementProgress.instance.AddAchievementNoob ();
-		AchievementProgress.instance.IncreasePlayGame ();
-        AchievementProgress.instance.InCreaseFailGame();
-
-        debug_txt.text = ""+AchievementManager.instance.achievements.Length;
+        debug_txt.text = " "+SaveManager.instance.firstPlay;
+       
     }
-    void ResetGame()
-    {
-        current_time = secound;
-        GameStart();
-    }
+
     IEnumerator DelayStart()
     {
         yield return new WaitForSeconds(0.5f);

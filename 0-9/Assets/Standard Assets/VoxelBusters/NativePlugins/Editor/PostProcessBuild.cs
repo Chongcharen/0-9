@@ -1,4 +1,5 @@
-﻿#if UNITY_EDITOR && !(UNITY_WINRT || UNITY_WEBPLAYER || UNITY_WEBGL)
+﻿
+#if UNITY_EDITOR && !(UNITY_WINRT || UNITY_WEBPLAYER || UNITY_WEBGL)
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Callbacks;
@@ -261,17 +262,17 @@ namespace VoxelBusters.NativePlugins
             Dictionary<string, object> _newPermissionsDict = new Dictionary<string, object>();
 
 #if USES_TWITTER
-			// Add twitter info 
-			if (_supportedFeatures.UsesTwitter)
-			{
-				const string 	_kFabricKitRootKey 		= "Fabric";
+            // Add twitter info 
+            if (_supportedFeatures.UsesTwitter)
+            {
+                const string _kFabricKitRootKey = "Fabric";
 
-				TwitterSettings _twitterSettings		= NPSettings.SocialNetworkSettings.TwitterSettings;
-				string 			_fabricJsonStr			= string.Format(kFabricKitJsonStringFormat, _twitterSettings.ConsumerKey);
+                TwitterSettings _twitterSettings = NPSettings.SocialNetworkSettings.TwitterSettings;
+                string _fabricJsonStr = string.Format(kFabricKitJsonStringFormat, _twitterSettings.ConsumerKey);
 
-				IDictionary 	_fabricJsonDictionary	= (IDictionary)JSONUtility.FromJSON(_fabricJsonStr);
-				_newPermissionsDict[_kFabricKitRootKey]	= _fabricJsonDictionary[_kFabricKitRootKey];
-			}
+                IDictionary _fabricJsonDictionary = (IDictionary)JSONUtility.FromJSON(_fabricJsonStr);
+                _newPermissionsDict[_kFabricKitRootKey] = _fabricJsonDictionary[_kFabricKitRootKey];
+            }
 #endif
 
             // Add permissions

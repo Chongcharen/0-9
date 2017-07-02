@@ -19,7 +19,10 @@ public class GameManager : MonoBehaviour
         set
         {
             _score = value;
-
+            if (_score % 1 == 0&&_score >=1)
+            {
+                Events.instance.OnActiveEffect_dispatch();
+            }
         }
 
     }
